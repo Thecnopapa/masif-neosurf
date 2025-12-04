@@ -58,33 +58,43 @@ def amide_to_single_bond(mol2_outfile):
         f.write("\n".join(mol2_new))
 
 
+def assign_bond_orders_to_pdb_ligand(ligand_pdb_block, ligand_name=None, template_ligand=None, remove_hydrogens=False):
+    """Assigns bond orders to a PDB ligand."""
+
+    rdmol = AllChem.MolFromPDBBlock(ligand_pdb_block, sanitize=True, removeHs=remove_hydrogens)
+
+    if template_ligand is not None:
+        print(f"[INFO] Using ligand connectivity from the provided template")
+
+    elif ligand_name is not None and ligand_name in ligand_expo:
+        smiles, expo_name = ligand_expo[ligand_name]
+        template_ligand = AllChem.MolFromSmiles(smiles)
+        print(f"[INFO] Using ligand connectivity from the PDB Ligand Expo (name: {expo_name})")
+
+    else:
+        raise NotImplementedError("Could not infer ligand connectivity. " \
+            "Please provide either a template_ligand or a ligand_name from " \
+            "the PDB Ligand Expo.")
+    
+    template_ligand = Chem.RemoveHs(template_ligand)
+    rdmol = AllChem.AssignBondOrdersFromTemplate(template_ligand, rdmol)
+    return rdmol
+
+
 def extract_ligand(pdb_file, ligand_name, ligand_chain, mol2_outfile, template_ligand=None, patched_mol2_file=None):
+
+    # Extract the ligand
     pdb = prody.parsePDB(pdb_file)
-    ligand = pdb.select(f'chain {ligand_chain} and resname {ligand_name[:3]}')
+    ligand = pdb.select(f'chain {ligand_chain} and resname {ligand_name}')
     assert ligand is not None and len(ligand) > 0, "Ligand not found"
 
     out = StringIO()
     prody.writePDBStream(out, ligand)
-    rdmol = AllChem.MolFromPDBBlock(out.getvalue(), sanitize=True, removeHs=False)
 
-    try:
-        if template_ligand is not None:
-            template = Chem.RemoveHs(template_ligand)
-            rdmol = AllChem.AssignBondOrdersFromTemplate(template, rdmol)
-            print(f"[INFO] Inferred ligand connectivity from the provided template")
-            
-        elif ligand_name in ligand_expo:
-            print("Extracting ligand connectivity from PDB Ligand Expo")
-            smiles, expo_name = ligand_expo[ligand_name]
-            template = AllChem.MolFromSmiles(smiles)
-            template = Chem.RemoveHs(template)
-            rdmol = AllChem.AssignBondOrdersFromTemplate(template, rdmol)
-            print(f"[INFO] Inferred ligand connectivity from the PDB Ligand Expo (name: {expo_name})")
+    try:        
+        rdmol = assign_bond_orders_to_pdb_ligand(out.getvalue(), ligand_name, template_ligand)
 
-        else:
-            raise ValueError()
-
-    except ValueError:
+    except (ValueError, NotImplementedError):
         print("Could not infer ligand connectivity from template or ligand expo. Determining bond types with OpenBabel...")
         obConversion = openbabel.OBConversion()
         obConversion.SetInAndOutFormats("pdb", "sdf")

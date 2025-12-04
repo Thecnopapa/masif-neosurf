@@ -10,10 +10,9 @@ from IPython.core.debugger import set_trace
 import os
 import prody
 from rdkit import Chem
-from rdkit.Chem import AllChem
 from io import StringIO
 
-from triangulation.ligand_utils import ligand_expo
+from triangulation.ligand_utils import assign_bond_orders_to_pdb_ligand
 
 
 def protonate(in_pdb_file, out_pdb_file, het_dict=os.environ.get('REDUCE_HET_DICT')):
@@ -63,21 +62,11 @@ def make_pdb3_format_atom(atomstring):
 def get_pdb_conect(pdb_file, ligand_name, ligand_chain, template_ligand=None, save_txt=None):
     pdb = prody.parsePDB(pdb_file)
     ligand = pdb.select(f'chain {ligand_chain} and resname {ligand_name}')
-
+    assert ligand is not None and len(ligand) > 0, "Ligand not found"
     out = StringIO()
     prody.writePDBStream(out, ligand)
-    rdmol = AllChem.MolFromPDBBlock(out.getvalue(), sanitize=True, removeHs=False)
 
-    if template_ligand is None:
-        try:
-            # Query the ligand expo
-            smiles, expo_name = ligand_expo[ligand_name]
-        except KeyError as e:
-            print(f"[ERROR] Could not find {ligand_name} in the PDB Ligand Expo. Consider passing an SDF template instead.")
-            raise e
-        template_ligand = AllChem.MolFromSmiles(smiles)
-
-    rdmol = AllChem.AssignBondOrdersFromTemplate(template_ligand, rdmol)
+    rdmol = assign_bond_orders_to_pdb_ligand(out.getvalue(), ligand_name, template_ligand, remove_hydrogens=True)
     rdmol = Chem.AddHs(rdmol, addCoords=True)
 
     mi  =  Chem.AtomPDBResidueInfo()
