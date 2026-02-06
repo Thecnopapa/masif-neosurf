@@ -96,6 +96,7 @@ def extract_ligand(pdb_file, ligand_name, ligand_chain, mol2_outfile, template_l
 
     except (ValueError, NotImplementedError):
         print("Could not infer ligand connectivity from template or ligand expo. Determining bond types with OpenBabel...")
+        rdmol = AllChem.MolFromPDBBlock(out.getvalue(), sanitize=True, removeHs=False)
         obConversion = openbabel.OBConversion()
         obConversion.SetInAndOutFormats("pdb", "sdf")
         obmol = openbabel.OBMol()
