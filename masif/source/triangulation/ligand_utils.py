@@ -58,6 +58,14 @@ def amide_to_single_bond(mol2_outfile):
         f.write("\n".join(mol2_new))
 
 
+def c_cat_to_c_ar(mol2_path: str) -> None:
+    """Replace C.cat atom types with C.ar in a mol2 file for pdb2pqr compatibility."""
+    with open(mol2_path, 'r') as f:
+        content = f.read()
+    with open(mol2_path, 'w') as f:
+        f.write(content.replace('C.cat', 'C.ar '))
+
+
 def assign_bond_orders_to_pdb_ligand(ligand_pdb_block, ligand_name=None, template_ligand=None, remove_hydrogens=False):
     """Assigns bond orders to a PDB ligand."""
 
@@ -122,6 +130,9 @@ def extract_ligand(pdb_file, ligand_name, ligand_chain, mol2_outfile, template_l
 
     # remove amide bond type because it is not supported by PDB2PQR
     amide_to_single_bond(mol2_outfile)
+
+    # replace C.cat sybyl atom type with C.ar which is semantically similar but supported by PDB2PQR
+    c_cat_to_c_ar(mol2_outfile)
 
     rdmol = neutralize_atoms(rdmol)
     assert rdmol.GetNumHeavyAtoms() < rdmol.GetNumAtoms(), \
