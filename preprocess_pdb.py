@@ -426,7 +426,7 @@ if __name__ == "__main__":
     parser.add_argument("--tmp_dir", type=Path, default=None,
                         help="Directory where temporary files will be saved. Provide a path if you would like to inspect these files for debugging.")
     parser.add_argument("--infer_reduce_het_dict", action="store_true", 
-                        help="Automatically create het dictionary used by reduce to add hydrogens. Particularly useful in combination with --sdf for ligands that aren't in the PDB.")
+                        help="Automatically create het dictionary used by reduce to add hydrogens. Particularly useful in combination with --sdf_or_smiles for ligands that aren't in the PDB.")
     args = parser.parse_args()
 
     if args.tmp_dir is not None:
