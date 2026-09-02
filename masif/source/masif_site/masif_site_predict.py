@@ -23,6 +23,7 @@ def mask_input_feat(input_feat, mask):
 
 params = masif_opts["site"]
 custom_params_file = sys.argv[1]
+print(custom_params_file)
 custom_params = importlib.import_module(custom_params_file, package=None)
 custom_params = custom_params.custom_params
 

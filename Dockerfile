@@ -1,11 +1,19 @@
 # Define base image
 #FROM pymesh/pymesh
-FROM --platform=linux/amd64 pymesh/pymesh
+#FROM --platform=linux/amd64 pymesh-bookworm
+FROM --platform=linux/amd64 pymesh-buster
+#FROM --platform=linux/amd64 pymesh/pymesh:py3.6
 
+RUN echo uname -r
+USER root
 # install necessary dependencies
-RUN apt-get update && \
-	apt-get install -y wget git unzip cmake vim libgl1-mesa-glx dssp
-	
+RUN apt-get update -y --allow-insecure-repositories --allow-unauthenticated
+RUN apt-get install -y wget git unzip cmake vim libgl1-mesa-glx dssp --allow-unauthenticated
+
+
+RUN useradd -ms /bin/bash neosurfer
+
+
 # DOWNLOAD/INSTALL APBS
 RUN mkdir /install
 WORKDIR /install
@@ -60,9 +68,12 @@ RUN python2 update_het_dict.py
 ENV REDUCE_HET_DICT /install/reduce/reduce_wwPDB_het_dict.txt
 
 # Change working directory
-#WORKDIR /
-WORKDIR /home
+WORKDIR /home/masif-neosurf
+COPY . .
+RUN chmod +x /home/masif-neosurf/preprocess_pdb.sh
 
+
+WORKDIR /home/masif-neosurf
 # We need to define the command to launch when we are going to run the image.
 # We use the keyword 'CMD' to do that.
 CMD [ "bash" ]
