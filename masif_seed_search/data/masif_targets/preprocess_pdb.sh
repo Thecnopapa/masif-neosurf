@@ -57,7 +57,7 @@ fi
 ################################################################################################################
 
 # get directory where this script is located
-BASEDIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+BASEDIR=/home/masif-neosurf
 
 
 # set some variables
@@ -108,22 +108,23 @@ fi
 # ./predict_site.sh $NAME_CHAIN
 if [ $return_code -eq 0 ]; then
     echo "Running masif site on $PDBFILE"
-    python -W ignore $MASIF_SOURCE/masif_site/masif_site_predict.py nn_models.all_feat_3l.custom_params $NAME_CHAIN
+
+    echo "python -W ignore $MASIF_SOURCE/masif_site/masif_site_predict.py nn_models.all_feat_3l.custom_params $NAME_CHAIN"
+    PYTHONPATH=$PYTHONPATH:$MASIF_DATA/masif_site/ python -W ignore $MASIF_SOURCE/masif_site/masif_site_predict.py nn_models.all_feat_3l.custom_params $NAME_CHAIN
     return_code=$?
 fi
 
 # ./color_site.sh $NAME_CHAIN
 if [ $return_code -eq 0 ]; then
-    export PYTHONPATH=$PYTHONPATH:$MASIF_DATA/masif_site/
-    python -W ignore $MASIF_SOURCE/masif_site/masif_site_label_surface.py nn_models.all_feat_3l.custom_params $NAME_CHAIN
+    PYTHONPATH=$PYTHONPATH:$MASIF_DATA/masif_site/ python -W ignore $MASIF_SOURCE/masif_site/masif_site_label_surface.py nn_models.all_feat_3l.custom_params $NAME_CHAIN
     return_code=$?
 fi
 
 # ./compute_descriptors.sh $NAME_CHAIN
 if [ $return_code -eq 0 ]; then
     echo "Computing descriptors"
-    export PYTHONPATH=$PYTHONPATH:$MASIF_DATA/masif_ppi_search/
-    python $MASIF_SOURCE/masif_ppi_search/masif_ppi_search_comp_desc.py nn_models.sc05.all_feat.custom_params $NAME_CHAIN
+    echo $PYTHONPATH
+    PYTHONPATH=$PYTHONPATH:$MASIF_DATA/masif_ppi_search/ python $MASIF_SOURCE/masif_ppi_search/masif_ppi_search_comp_desc.py nn_models.sc05.all_feat.custom_params $NAME_CHAIN
     return_code=$?
 fi
 
