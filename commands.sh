@@ -81,16 +81,37 @@ search (){
 		echo "Please provide <pdb code> <chain> <num_sites>"
 		return 1
 	fi
-
+	CODE=$1
+	CHAIN=$2
+	NUM_SITES=$3
+	echo " * Filtering vertices..."
+	python ./filter_vertices.py $EXAMPLE_PROCESSED_FOLDER/output/all_feat_3l/pred_surfaces/$1_$2.ply $NUM_SITES
 	echo ""
 	echo " * Searching targets for $1_$2 in $EXAMPLE_PROCESSED_FOLDER"
+	VERTICE_PATH="$EXAMPLE_PROCESSED_FOLDER/output/all_feat_3l/pred_surfaces/$1_$2.filtered_$3.vix"
+	if [[ -f "$VERTICE_PATH" ]]; then
 
-	python -W ignore masif_search.py \
+		echo " * Using filtered vertices from $VERTICE_PATH"
+		python -W ignore masif_search.py \
 		--target_dir $EXAMPLE_PROCESSED_FOLDER \
-		--target $1_$2 \
+		--target ${CODE}_${CHAIN} \
 		--database $EXAMPLE_PROCESSED_FOLDER \
 		--out_dir $EXAMPLE_RESULTS_FOLDER \
-		--num_sites  $3 "${@:3:}"
+		--site_vix_file="$VERTICE_PATH" "${@:3:}"
+	else
+		echo " * Filtered file: $VERTICE_PATH not found"
+		echo " * Using highest scoring vertices"
+		python -W ignore masif_search.py \
+		--target_dir $EXAMPLE_PROCESSED_FOLDER \
+		--target ${CODE}_${CHAIN} \
+		--database $EXAMPLE_PROCESSED_FOLDER \
+		--out_dir $EXAMPLE_RESULTS_FOLDER \
+		--num_sites  $NUM_SITES "${@:3:}"
+	fi
+	return 1
+
+
+
 
 	echo " * Results saved to $EXAMPLE_RESULTS_FOLDER"
 }
