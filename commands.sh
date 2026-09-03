@@ -90,7 +90,7 @@ search (){
 		--target $1_$2 \
 		--database $EXAMPLE_PROCESSED_FOLDER \
 		--out_dir $EXAMPLE_RESULTS_FOLDER \
-		--num_sites  $3
+		--num_sites  $3 "${@:3:}"
 
 	echo " * Results saved to $EXAMPLE_RESULTS_FOLDER"
 }

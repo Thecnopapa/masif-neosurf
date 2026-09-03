@@ -27,6 +27,7 @@ print(script)
 
 pdb_path = os.path.join(target_folder, target_name+".pdb")
 ply_path = os.path.join(target_folder, target_name+".ply")
+selected_sites_path = os.path.join(target_folder, f"selected_sites.vert")
 script.raw(f"cd {os.path.abspath(os.getcwd())}",  is_fun=False)
 script.raw(f"cd {script.subfolder}",  is_fun=False)
 
@@ -40,9 +41,9 @@ for site in sites:
         match_path=os.path.join(site_path, match)
         if not os.path.isdir(match_path):
             continue
+        name = f"{site}_{match}"
         for file in os.listdir(match_path):
             if file.endswith(".pdb"):
-                name = f"{site}_{file.split('.')[0]}"
                 path = os.path.join(match_path, file)
             elif file.endswith(".npy"):
                 matrix = f"matrix_{name}"
@@ -51,6 +52,36 @@ for site in sites:
         script.load(path, name)
         #script.raw(f"cmd.transform_object('{name}', {matrix})", is_fun=False)
     script.group(site)
+script.disable("vert*")
+script.disable("pb*")
+script.disable("hbond*")
+script.disable("mesh*")
+script.disable("hphobic*")
+with open(selected_sites_path) as f:
+    for n, line in enumerate(f):
+        print(n)
+        coord_str = line.split(",")
+        coord = [float(x) for x in coord_str]
+        b=0
+        with open(ply_path) as ply:
+            for vert in ply:
+                print(vert)
+                cc =" ".join([str(c).strip() for c in coord_str])
+                print(cc)
+                if vert.startswith(cc):
+                    data = vert.split(" ")
+                    print(data)
+                    b = data[3]
+                    print(b)
+                    break
+        script.pseudoatom(f"sites{n}", coord=coord, elem="'ca'", b=b)
+
+
+
+
+script.group("sites", "sites")
+script.show("sites", "spheres")
+script.spectrum("sites", minimum=0, maximum=1)
 
 script.execute(extra_options=None, quiet=False)
 
