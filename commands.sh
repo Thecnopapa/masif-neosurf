@@ -1,7 +1,7 @@
-EXAMPLE_FOLDER="./example"
-EXAMPLE_PDB_FOLDER="$EXAMPLE_FOLDER/pdbs"
-EXAMPLE_PROCESSED_FOLDER="$EXAMPLE_FOLDER/processed"
-EXAMPLE_RESULTS_FOLDER="$EXAMPLE_FOLDER/search_results"
+export EXAMPLE_FOLDER="./example"
+export EXAMPLE_PDB_FOLDER="$EXAMPLE_FOLDER/pdbs"
+export EXAMPLE_PROCESSED_FOLDER="$EXAMPLE_FOLDER/processed"
+export EXAMPLE_RESULTS_FOLDER="$EXAMPLE_FOLDER/search_results"
 
 
 
@@ -77,8 +77,8 @@ process-pdb (){
 
 
 search (){
-	if [[ $# -lt 2 ]]; then
-		echo "Please provide chain"
+	if [[ $# -lt 3 ]]; then
+		echo "Please provide <pdb code> <chain> <num_sites>"
 		return 1
 	fi
 
@@ -90,7 +90,14 @@ search (){
 		--target $1_$2 \
 		--database $EXAMPLE_PROCESSED_FOLDER \
 		--out_dir $EXAMPLE_RESULTS_FOLDER \
-		--num_sites  4
+		--num_sites  $3 \
+		--cutoff 5.0 \
 	echo " * Results saved to $EXAMPLE_RESULTS_FOLDER"
 }
 
+
+
+show (){
+	echo " * Showing search results"
+	python ./search_show.py "$@"
+}
