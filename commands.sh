@@ -1,4 +1,11 @@
-export EXAMPLE_FOLDER="./example"
+
+if [[ "$*" == *"--oligo"* ]]; then
+	echo " * Unsing oliogodb"
+	export EXAMPLE_FOLDER="./olgodb"
+else
+	echo " * Unsing example db"
+	export EXAMPLE_FOLDER="./example"
+fi
 export EXAMPLE_PDB_FOLDER="$EXAMPLE_FOLDER/pdbs"
 export EXAMPLE_PROCESSED_FOLDER="$EXAMPLE_FOLDER/processed"
 export EXAMPLE_RESULTS_FOLDER="$EXAMPLE_FOLDER/search_results"
@@ -13,6 +20,7 @@ run (){
 
 
 process-list (){
+
 	path=$(realpath $1)
 	echo "Processing CODES in : $path"
 
@@ -24,6 +32,7 @@ process-list (){
 }
 
 process-pdb (){
+
 	CODE=$1
 	FNAME="$1.pdb"
 	CHAIN="$2"
@@ -77,6 +86,7 @@ process-pdb (){
 
 
 search (){
+
 	if [[ $# -lt 3 ]]; then
 		echo "Please provide <pdb code> <chain> <num_sites>"
 		return 1
@@ -119,6 +129,7 @@ search (){
 
 
 show (){
+
 	echo " * Showing search results"
 	python ./search_show.py "$@"
 }

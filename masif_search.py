@@ -256,7 +256,7 @@ def masif_search(params):
             out_info.write(f'name: {target_ppi_pair_id}, site: {site_ix}, vix: {site_vix}')
 
         # Match the top descriptors in the database based on descriptor distance.
-        print('Starting to match target descriptor to descriptors from {} proteins; this may take a while.'.format(len(seed_ppi_pair_ids)))
+        print(site_ix, 'Starting to match target descriptor to descriptors from {} proteins; this may take a while.'.format(len(seed_ppi_pair_ids)))
         matched_dict, scores_dict = match_descriptors(seed_ppi_pair_ids, ['p1', 'p2'], target_desc[0][site_vix], params, return_scores=True)
 
         if len(matched_dict.keys())==0:
@@ -269,7 +269,7 @@ def masif_search(params):
         #         f.write(' '.join(map(str, matched_inds)))
 
         print(" ")
-        print("Second stage of MaSIF seed search: each matched descriptor is aligned and scored; this may take a while..")
+        print(site_ix, "Second stage of MaSIF seed search: each matched descriptor is aligned and scored; this may take a while..")
         count_matched_fragments = 0
         for ix, name in enumerate(matched_dict.keys()):
             try:
