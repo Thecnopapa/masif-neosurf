@@ -1,6 +1,8 @@
 # Databases
 example/*
 olgodb/*
+oligodb/*
+coildb/*
 
 # Bioiain
 *bioiain.d

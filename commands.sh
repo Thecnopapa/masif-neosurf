@@ -1,9 +1,13 @@
 
 if [[ "$*" == *"--oligo"* ]]; then
-	echo " * Unsing oliogodb"
-	export EXAMPLE_FOLDER="./olgodb"
+	echo -e " * Using oliogo db\033]0;oligo DB\a"
+	export EXAMPLE_FOLDER="./oligodb"
+
+elif [[ "$*" == *"--coil"* ]]; then
+	echo -e " * Using coil db\033]0;coil DB\a"
+	export EXAMPLE_FOLDER="./coildb"
 else
-	echo " * Unsing example db"
+	echo -e " * Using example db\033]0;example DB\a"
 	export EXAMPLE_FOLDER="./example"
 fi
 export EXAMPLE_PDB_FOLDER="$EXAMPLE_FOLDER/pdbs"
@@ -12,9 +16,16 @@ export EXAMPLE_RESULTS_FOLDER="$EXAMPLE_FOLDER/search_results"
 
 
 
+build (){
+	sudo docker build . -t masif-neosurf
+}
 
 run (){
 	sudo docker run -it -v $PWD:/home/masif-neosurf masif-neosurf
+}
+
+connect (){
+	sudo docker exec -it $(sudo docker ps|grep "masif-neosurf"|head -1|rev|cut -d " " -f1 |rev) bash
 }
 
 

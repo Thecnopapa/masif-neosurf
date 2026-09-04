@@ -40,7 +40,7 @@ while (len(target_vertices) <= min(num_sites, len(sorted_vertices))) and (n < le
     for vv in target_vertices:
         p2 = vv[1:4]
         #print(p2)
-        if d2(p1, p2) <= 25:
+        if d2(p1, p2) <= 9:
             is_too_close = True
             #print("Too close")
             break

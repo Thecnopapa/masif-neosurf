@@ -35,6 +35,7 @@ script.load(pdb_path)
 script.raw(f"loadply {relative_path(ply_path, script.subfolder)}",  is_fun=False)
 for site in sites:
     site_path = os.path.join(target_folder, site)
+    n_in_site=0
     for match in os.listdir(site_path):
         match_path=os.path.join(site_path, match)
         if not os.path.isdir(match_path):
@@ -48,8 +49,10 @@ for site in sites:
                 script.raw(f"{matrix} = np.load('{relative_path(os.path.join(match_path, file), script.subfolder)}').flatten()", is_fun=False)
 
         script.load(path, name)
+        n_in_site += 1
         #script.raw(f"cmd.transform_object('{name}', {matrix})", is_fun=False)
-    script.group(site)
+    if n_in_site > 0:
+        script.group(site)
 script.disable("vert*")
 script.disable("pb*")
 script.disable("hbond*")
@@ -58,13 +61,14 @@ script.disable("hphobic*")
 with open(selected_sites_path) as f:
     for n, line in enumerate(f):
         #print(n)
-        coord_str = line.split(",")
+        coord_str = [c.strip() for c in line.split(",")]
         coord = [float(x) for x in coord_str]
         b=0
         with open(ply_path) as ply:
             for vert in ply:
                 #print(vert)
-                cc =" ".join([str(c).strip() for c in coord_str])
+                #print([float(c) % 1 for c in coord_str])
+                cc =" ".join([c if (float(c) % 1 != 0) else str(int(float(c))) for c in coord_str])
                 #print(cc)
                 if vert.startswith(cc):
                     data = vert.split(" ")
