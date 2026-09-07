@@ -16,6 +16,7 @@ change-db(){
 	export DB_PDB_FOLDER="$DB_FOLDER/pdbs"
 	export DB_PROCESSED_FOLDER="$DB_FOLDER/processed"
 	export DB_RESULTS_FOLDER="$DB_FOLDER/search_results"
+	makedir -p $DB_PDB_FOLDER
 }
 change-db
 
@@ -127,7 +128,7 @@ search (){
 		--target_dir $DB_PROCESSED_FOLDER \
 		--target ${CODE}_${CHAIN} \
 		--database $DB_PROCESSED_FOLDER \
-		--out_dir $DB_RESULTS_FOLDER \
+		--out_dir "$DB_RESULTS_FOLDER/$NUM_SITES" \
 		--site_vix_file="$VERTICE_PATH" "${@:3:}"
 	else
 		echo " * Filtered file: $VERTICE_PATH not found"
@@ -136,7 +137,7 @@ search (){
 		--target_dir $DB_PROCESSED_FOLDER \
 		--target ${CODE}_${CHAIN} \
 		--database $DB_PROCESSED_FOLDER \
-		--out_dir $DB_RESULTS_FOLDER \
+		--out_dir "$DB_RESULTS_FOLDER/$NUM_SITES" \
 		--num_sites  $NUM_SITES "${@:3:}"
 	fi
 	return 1

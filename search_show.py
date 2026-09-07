@@ -6,10 +6,36 @@ import numpy as np
 
 results_folder=os.environ["DB_RESULTS_FOLDER"]
 
+if len(os.listdir(results_folder)) == 1:
+    results_folder=os.path.join(results_folder, os.listdir(results_folder)[0])
+
+elif len(os.listdir(results_folder)) == 0:
+    print(" * No results found in:", results_folder)
+else:
+    print(" * Multiple results found:")
+    folders = [f for f in listdir(results_folder) if os.path.isdir(os.path.join(results_folder, f))]
+    for n, folder in enumerate(folders):
+        print(f" - {n}: {folder}")
+    fn = None
+    while fn is None:
+        try:
+            fn = int(input(" * Please select desired folder (int):\n>>> "))
+        except ValueError:
+            print("Please introduce an int")
+            fn = None
+    results_folder = os.path.join(results_folder, folders[fn])
+
+
+
+print(" *  Results folder:", results_folder)
+
+
+
 target_name = sys.argv[1]
-print("Target name:", target_name)
+print(" * Target name:", target_name)
 target_folder=os.path.join(results_folder, target_name)
-print("Target fodler:", target_folder)
+print(" * Target folder:", target_folder)
+assert os.path.exists(target_folder)
 
 sites = []
 for site in os.listdir(target_folder):

@@ -1,8 +1,9 @@
 # Databases
-example/*
-olgodb/*
-oligodb/*
-coildb/*
+*-db
 
 # Bioiain
 *bioiain.d
+
+# Cache
+.keras
+.prodyrc
