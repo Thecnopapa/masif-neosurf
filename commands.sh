@@ -1,31 +1,41 @@
 
-if [[ "$*" == *"--oligo"* ]]; then
-	echo -e " * Using oliogo db\033]0;oligo DB\a"
-	export EXAMPLE_FOLDER="./oligodb"
-
-elif [[ "$*" == *"--coil"* ]]; then
-	echo -e " * Using coil db\033]0;coil DB\a"
-	export EXAMPLE_FOLDER="./coildb"
-else
-	echo -e " * Using example db\033]0;example DB\a"
-	export EXAMPLE_FOLDER="./example"
-fi
-export EXAMPLE_PDB_FOLDER="$EXAMPLE_FOLDER/pdbs"
-export EXAMPLE_PROCESSED_FOLDER="$EXAMPLE_FOLDER/processed"
-export EXAMPLE_RESULTS_FOLDER="$EXAMPLE_FOLDER/search_results"
 
 
+
+change-db(){
+	if [[ -n "$1" ]]; then
+		export DB_NAME="$1"
+	elif [[ -n "$DB_NAME" ]]; then
+		export DB_NAME="$DB_NAME"
+	else
+		export DB_NAME="example"
+	fi
+
+	echo -e " * Using $DB_NAME db\033]0;$DB_NAME DB\a"
+	export DB_FOLDER="./$DB_NAME-db"
+	export DB_PDB_FOLDER="$DB_FOLDER/pdbs"
+	export DB_PROCESSED_FOLDER="$DB_FOLDER/processed"
+	export DB_RESULTS_FOLDER="$DB_FOLDER/search_results"
+}
+change-db
 
 build (){
 	sudo docker build . -t masif-neosurf
 }
 
 run (){
-	sudo docker run -it -v $PWD:/home/masif-neosurf masif-neosurf
+	echo "$(sudo docker ps -a | grep "masif-neosurf")"
+	if [[ -z "$(sudo docker ps -a | grep "masif-neosurf")" ]]; then
+		echo " * Creating new Docker container..."
+		sudo docker run -it -v $PWD:/home/masif-neosurf masif-neosurf
+	else
+		echo " * Starting up existing container..."
+		sudo docker start -ia $(sudo docker ps -a |grep "masif-neosurf"|head -1|cut -d " " -f1 )
+	fi
 }
 
 connect (){
-	sudo docker exec -it $(sudo docker ps|grep "masif-neosurf"|head -1|rev|cut -d " " -f1 |rev) bash
+	sudo docker exec -it $(sudo docker ps |grep "masif-neosurf"|head -1|rev|cut -d " " -f1 |rev) bash
 }
 
 
@@ -47,8 +57,8 @@ process-pdb (){
 	CODE=$1
 	FNAME="$1.pdb"
 	CHAIN="$2"
-	mkdir -p $EXAMPLE_PDB_FOLDER
-	FILEPATH="$EXAMPLE_PDB_FOLDER/$FNAME"
+	mkdir -p $DB_PDB_FOLDER
+	FILEPATH="$DB_PDB_FOLDER/$FNAME"
 
 
 
@@ -84,11 +94,11 @@ process-pdb (){
 	fi
 	for chain in ${chains[@]}; do
 		echo ""
-		if [[ -d $EXAMPLE_PROCESSED_FOLDER/descriptors/sc05/all_feat/${CODE}_${CHAIN} ]]; then
+		if [[ -d $DB_PROCESSED_FOLDER/descriptors/sc05/all_feat/${CODE}_${CHAIN} ]]; then
 			echo " * PDB (${CODE}_${CHAIN}) already processed"
 		else
 			echo " * Processing $FILEPATH ${CODE}_${chain}"
-			python -W ignore ./preprocess_pdb.py $FILEPATH ${CODE}_${chain} -o $EXAMPLE_PROCESSED_FOLDER
+			python -W ignore ./preprocess_pdb.py $FILEPATH ${CODE}_${chain} -o $DB_PROCESSED_FOLDER
 		fi
 
 	done
@@ -106,27 +116,27 @@ search (){
 	CHAIN=$2
 	NUM_SITES=$3
 	echo " * Filtering vertices..."
-	python ./filter_vertices.py $EXAMPLE_PROCESSED_FOLDER/output/all_feat_3l/pred_surfaces/$1_$2.ply $NUM_SITES
+	python ./filter_vertices.py $DB_PROCESSED_FOLDER/output/all_feat_3l/pred_surfaces/$1_$2.ply $NUM_SITES
 	echo ""
-	echo " * Searching targets for $1_$2 in $EXAMPLE_PROCESSED_FOLDER"
-	VERTICE_PATH="$EXAMPLE_PROCESSED_FOLDER/output/all_feat_3l/pred_surfaces/$1_$2.filtered_$3.vix"
+	echo " * Searching targets for $1_$2 in $DB_PROCESSED_FOLDER"
+	VERTICE_PATH="$DB_PROCESSED_FOLDER/output/all_feat_3l/pred_surfaces/$1_$2.filtered_$3.vix"
 	if [[ -f "$VERTICE_PATH" ]]; then
 
 		echo " * Using filtered vertices from $VERTICE_PATH"
 		python -W ignore masif_search.py \
-		--target_dir $EXAMPLE_PROCESSED_FOLDER \
+		--target_dir $DB_PROCESSED_FOLDER \
 		--target ${CODE}_${CHAIN} \
-		--database $EXAMPLE_PROCESSED_FOLDER \
-		--out_dir $EXAMPLE_RESULTS_FOLDER \
+		--database $DB_PROCESSED_FOLDER \
+		--out_dir $DB_RESULTS_FOLDER \
 		--site_vix_file="$VERTICE_PATH" "${@:3:}"
 	else
 		echo " * Filtered file: $VERTICE_PATH not found"
 		echo " * Using highest scoring vertices"
 		python -W ignore masif_search.py \
-		--target_dir $EXAMPLE_PROCESSED_FOLDER \
+		--target_dir $DB_PROCESSED_FOLDER \
 		--target ${CODE}_${CHAIN} \
-		--database $EXAMPLE_PROCESSED_FOLDER \
-		--out_dir $EXAMPLE_RESULTS_FOLDER \
+		--database $DB_PROCESSED_FOLDER \
+		--out_dir $DB_RESULTS_FOLDER \
 		--num_sites  $NUM_SITES "${@:3:}"
 	fi
 	return 1
@@ -134,7 +144,7 @@ search (){
 
 
 
-	echo " * Results saved to $EXAMPLE_RESULTS_FOLDER"
+	echo " * Results saved to $DB_RESULTS_FOLDER"
 }
 
 

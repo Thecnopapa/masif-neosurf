@@ -4,7 +4,7 @@ from bioiain.visualisation.pymol import PymolScript
 from bioiain.utilities import relative_path
 import numpy as np
 
-results_folder=os.environ["EXAMPLE_RESULTS_FOLDER"]
+results_folder=os.environ["DB_RESULTS_FOLDER"]
 
 target_name = sys.argv[1]
 print("Target name:", target_name)

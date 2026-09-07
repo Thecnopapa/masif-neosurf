@@ -8,10 +8,10 @@ RUN echo uname -r
 USER root
 # install necessary dependencies
 RUN apt-get update -y --allow-insecure-repositories --allow-unauthenticated
-RUN apt-get install -y wget git unzip cmake vim libgl1-mesa-glx dssp --allow-unauthenticated
+RUN apt-get install -y --allow-unauthenticated wget git unzip cmake libgl1-mesa-glx dssp
+RUN apt-get install -y --allow-unauthenticated vim htop
 
 
-RUN useradd -ms /bin/bash neosurfer
 
 
 # DOWNLOAD/INSTALL APBS
@@ -35,10 +35,10 @@ RUN python get-pip.py
 RUN pip install pdb2pqr
 
 # Setup environment variables 
-ENV MSMS_BIN /usr/local/bin/msms
-ENV APBS_BIN /usr/local/bin/apbs
-ENV MULTIVALUE_BIN /usr/local/share/apbs/tools/bin/multivalue
-ENV PDB2PQR_BIN /usr/local/bin/pdb2pqr30
+ENV MSMS_BIN=/usr/local/bin/msms
+ENV APBS_BIN=/usr/local/bin/apbs
+ENV MULTIVALUE_BIN=/usr/local/share/apbs/tools/bin/multivalue
+ENV PDB2PQR_BIN=/usr/local/bin/pdb2pqr30
 
 # DOWNLOAD reduce (for protonation)
 WORKDIR /install
@@ -51,6 +51,18 @@ RUN cmake /install/reduce/reduce_src
 WORKDIR /install/reduce/reduce_src
 RUN make
 RUN make install
+
+# Utilities
+
+
+# Clean APT
+
+RUN apt-get remove cmake -y
+
+RUN apt-get autoremove -y
+RUN apt-get autoclean -y
+RUN apt-get clean -y
+
 
 # Install python libraries
 RUN pip3 install matplotlib 
@@ -65,15 +77,17 @@ RUN pip install openbabel-wheel==3.1.1.7
 # Get an updated het_atm dictionary for reduce
 WORKDIR /install/reduce
 RUN python2 update_het_dict.py
-ENV REDUCE_HET_DICT /install/reduce/reduce_wwPDB_het_dict.txt
+ENV REDUCE_HET_DICT=/install/reduce/reduce_wwPDB_het_dict.txt
+
+RUN python -m pip cache purge
 
 # Change working directory
+RUN useradd -ms /bin/bash -d /home/masif-neosurf neosurfer
+RUN echo "source /home/masif-neosurf/commands.sh" > /home/masif-neosurf/.bashrc
 WORKDIR /home/masif-neosurf
-COPY . .
-RUN chmod +x /home/masif-neosurf/preprocess_pdb.sh
+RUN chown -R  neosurfer /home/masif-neosurf
+USER neosurfer
+WORKDIR /home/masif-neosurf
 
 
-WORKDIR /home/masif-neosurf
-# We need to define the command to launch when we are going to run the image.
-# We use the keyword 'CMD' to do that.
-CMD [ "bash" ]
+CMD [ "bash", "-i" ]
