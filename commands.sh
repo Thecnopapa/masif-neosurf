@@ -16,7 +16,7 @@ change-db(){
 	export DB_PDB_FOLDER="$DB_FOLDER/pdbs"
 	export DB_PROCESSED_FOLDER="$DB_FOLDER/processed"
 	export DB_RESULTS_FOLDER="$DB_FOLDER/search_results"
-	makedir -p $DB_PDB_FOLDER
+	mkdir -p $DB_PDB_FOLDER
 }
 change-db
 
